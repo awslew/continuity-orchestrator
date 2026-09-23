@@ -1,0 +1,150 @@
+# Continuity Orchestrator
+
+> 让支持 MCP 的聊天客户端（网页版 ChatGPT、Claude Code、DSH、Codex 等）读取你**明确共享**的本地项目源码，拿到真实文件路径、真实行号和搜索结果。基础只读入口不需要 API key、不调用本地模型、不需要浏览器驱动。仓库另含一条**实验性**的 Codex 额度接力链路（Plus relay），默认 dry-run 并由环境变量门控。
+
+- 上游仓库：<https://github.com/awslew/continuity-orchestrator>
+- 运行时：TypeScript（ESM），Node.js >= 22（见 [package.json](package.json) 的 `engines`）
+- 许可证：MIT（见 [LICENSE](LICENSE)）
+- 包状态：`"private": true`，**不发布到 npm**
+
+## 项目定位
+
+**是什么**：一组 MCP server 入口，把本机被显式登记的项目以**只读**方式暴露给任何 MCP 客户端；另有实验性的接力（relay）入口用于 Codex 额度交接。
+
+**给谁用**：
+
+- 想直接在聊天客户端里问“这个函数在哪个文件、第几行、怎么写的”的开发者
+- 不想为此付 API 账单、也不想把源码上传到第三方索引的本地优先（local-first）用户
+- 需要给 coding agent 一个受 allowlist 约束、可审计的本地读取入口的团队
+
+**解决什么问题**：
+
+1. 聊天客户端看不到你的真实源码，只能靠手工粘贴，行号与上下文会失真 —— 只读入口提供真实路径、行号与字面量搜索结果。
+2. 让模型读到本地文件通常要额外消耗配额或依赖浏览器自动化 —— 只读入口刻意不引入这两者。
+3. 一个项目一个项目地登记太麻烦 —— Pro 入口在开启 `local_access` 后可按消息中的绝对路径直接操作，无需逐项目配置。
+
+## 快速开始
+
+需要 Node.js 22+。在仓库根目录执行：
+
+```powershell
+npm ci --ignore-scripts
+npm run build
+Copy-Item config/projects.example.json config/projects.local.json
+# 编辑 config/projects.local.json 中的 root 与 share
+$env:CONTINUITY_PROJECTS_CONFIG = (Resolve-Path config/projects.local.json).Path
+npm run reader:check
+npm run reader:stdio
+```
+
+`reader:stdio` 启动后会等待 MCP 客户端输入，**终端没有欢迎文字是正常现象**。
+
+项目配置格式（来自 [config/projects.example.json](config/projects.example.json)）：
+
+```json
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "my-project",
+      "name": "My local project",
+      "root": "D:/projects/my-project",
+      "share": ["src", "docs", "README.md", "package.json"]
+    }
+  ]
+}
+```
+
+客户端接入与网页连接步骤见 [项目读取指南](docs/project-reader.md)。网页 ChatGPT 需要实际可用的 Developer Mode 与 Secure MCP Tunnel 或受保护的 HTTPS MCP 传输，本项目**不保证所有 Plus 账户准入**。
+
+## 三个入口
+
+| 入口 | 当前能力 | 依赖 |
+| --- | --- | --- |
+| `dist/src/project-reader/mcp.js` | 4 个只读工具：`continuity_projects_list`、`continuity_project_files`、`continuity_project_read`、`continuity_project_search` | 本机显式项目配置；无本地模型调用 |
+| `dist/src/project-reader/pro.js` | 12 个基础工具；连续编辑另加 5 个，默认项目自动开发另加 3 个，动态路径另加 5 个；本机全部启用共 25 个 | 动态路径只需本机启用 `local_access`，不需逐项目配置；原 diff 与可选 DSH 路径另外配置 Bridge |
+| `dist/src/main.js` | 20 个接力工具；已接通任务注册、完整 drain 到 `HANDOFF_READY`、受监督 worker 控制与回接原 Codex 线程 | 显式 runtime 配置、相应后端及 feature flags |
+
+## 核心能力
+
+- **只读项目读取**：列项目、列目录、按行范围读取、字面量搜索，返回真实路径与行号。
+- **连续编辑（Pro）**：本地自动建立 Git 快照、运行测试并在通过后写回；支持非 Git 仓库与有未提交修改的工程。工具面为 `continuity_edit_propose` / `continuity_edit_validate` / `continuity_edit_apply` / `continuity_edit_result` / `continuity_edit_cancel`。
+- **默认项目自动开发（Pro）**：`continuity_develop` / `continuity_develop_context` / `continuity_develop_undo`。
+- **动态路径（Pro）**：开启 `local_access` 后，`continuity_local_context` / `continuity_local_read` / `continuity_local_develop` / `continuity_local_result` / `continuity_local_control`，无需逐项目登记。
+- **补丁流程**：`continuity_patch_submit` / `continuity_patch_validate` / `continuity_patch_apply`。
+- **接力链路（实验）**：`continuity_task_register` 注册账本、`continuity_drain` 完整排空与 handoff 生成、受监督 worker 控制及回滚、`continuity_resume_codex` 回接原线程，配合 `FileRelayServerStore` 跨重启持久化。
+- **状态与 worker**：`continuity_pro_status`、`continuity_project_status`、`continuity_task_result`、`continuity_worker_start`、`continuity_worker_control`。
+
+## 关键约束与已知取舍
+
+- **证据边界**：仓库内全部接力证据都是**本地合同证据（Local Contract Evidence）**，不等同于真实网页、Tunnel、App Server、Bridge、真实账户或 worker 的端到端验收。单元测试通过只是本地合同证据；G3/G4/G6/G7 在拿到各自的真实回执前保持 `未验证`。
+- **能力门控刻意关闭**：`REAL_WEBGPT_DRIVE_CAPABILITIES` 四项全 `false` 是经过单元测试固定的安全决定，生产环境默认不开放未验证的真实 web 传输。
+- **Gate D-MOUNT 未执行**：把生产 Tunnel profile 切换到 Continuity App 的动作**待用户明确确认才可执行**，当前未执行、未验证。
+- **两个模块刻意未挂载**：`src/web/auto-wakeup.ts`（进程内无调度宿主，stdio MCP 服务内 `setInterval` 计数为 0，其 payload 会被真实传输拒绝）与 `src/web/multi-task.ts`（纯内存隔离注册表，跨重启无法恢复任务映射，项目锁未持久化）。
+- **接力生命周期与终态**：`CODEX_ACTIVE -> DRAINING -> HANDOFF_READY -> WEB_UNATTENDED_EXECUTING -> WEB_TERMINAL -> RETURN_READY -> CODEX_RESUMED`。封闭终态原因**仅限** `ALL_TASKS_COMPLETED`、`WEB_QUOTA_EXHAUSTED`、`HUMAN_STOP`；阶段完成、空 ready 队列、错误、超时、Codex 恢复或普通人类消息都**不是**终态。
+- **`handoff.md` 是唯一真相来源**：其完整 `remaining_work` 集合按数量、任务 ID、条目内容与哈希校验；sidecar **无法**修补缺失或不完整的 Markdown handoff。
+- **默认 dry-run**：生产接力开关由环境变量门控，例如 `CONTINUITY_AUTO_DRAIN_ENABLED`、`CONTINUITY_RETURN_TO_CODEX_ENABLED`、`CONTINUITY_DRY_RUN`。
+- **网页端准入不确定**：需要真实可用的 Developer Mode 与 Tunnel；不保证所有 Plus 账户可用。Plus Admission Test 是用户/账户证据，不是通用计划保证。
+- **测试行为**：测试使用临时目录，不写用户仓库账本；安装不需要任何 package 生命周期脚本。
+
+## 环境变量
+
+按用途分组（均已在本仓库源码中确认存在）：
+
+- 只读入口：`CONTINUITY_PROJECTS_CONFIG`
+- Pro 入口：`CONTINUITY_PRO_CONFIG`、`CONTINUITY_PRO_DEBUG`、`CONTINUITY_REPOSITORY_ROOT`
+- 运行与状态：`CONTINUITY_STATE_DIR`、`CONTINUITY_LEASE_TTL_MS`、`CONTINUITY_FRESHNESS_WINDOW_MS`、`CONTINUITY_MAX_EVIDENCE_BYTES`、`CONTINUITY_DURABLE_LOCK_TIMEOUT_MS`、`CONTINUITY_EVIDENCE_DIR`
+- 特性开关：`CONTINUITY_FLAGS`、`CONTINUITY_DRY_RUN`、`CONTINUITY_AUTO_DRAIN_ENABLED`、`CONTINUITY_RETURN_TO_CODEX_ENABLED`、`CONTINUITY_ORCHESTRATOR_ENABLED`、`CONTINUITY_QUOTA_GUARD_ENABLED`、`CONTINUITY_WATCHDOG_ENABLED`、`CONTINUITY_PATCH_APPLY_ENABLED`、`CONTINUITY_ENGINEERING_BRIDGE_ENABLED`、`CONTINUITY_DSH_ENABLED`
+- 接力 web 侧：`CONTINUITY_WEBGPT_BASE_URL`、`CONTINUITY_WEBGPT_KEY`、`CONTINUITY_WEBGPT_TAB_ID`、`CONTINUITY_WEBGPT_TIMEOUT_MS`、`CONTINUITY_WEBGPT_MAX_PAYLOAD_CHARS`、`CONTINUITY_WEBGPT_TOKEN_ENV`、`CONTINUITY_WEB_UNATTENDED_ENABLED`、`CONTINUITY_WEB_HANDOFF_ENABLED`、`CONTINUITY_WEB_AUTOWAKE_ENABLED`
+- 后端进程：`CONTINUITY_APP_SERVER_COMMAND`、`CONTINUITY_APP_SERVER_ARGS_JSON`、`CONTINUITY_APP_SERVER_CWD`、`CONTINUITY_APP_SERVER_ENV_JSON`、`CONTINUITY_APP_SERVER_ENV_ALLOWLIST_JSON`、`CONTINUITY_APP_SERVER_REQUEST_TIMEOUT_MS`、`CONTINUITY_APP_SERVER_SHUTDOWN_TIMEOUT_MS`、`CONTINUITY_BRIDGE_*`
+
+## 常用命令
+
+来自 [package.json](package.json) 的 `scripts`：
+
+```powershell
+npm run build                 # tsc -p tsconfig.json
+npm run typecheck             # tsc --noEmit
+npm run reader:check          # node scripts/check-project-reader.mjs
+npm run reader:stdio          # 只读入口（dist/src/project-reader/mcp.js）
+npm run pro:stdio             # Pro 入口（dist/src/project-reader/pro.js）
+npm run pro:setup             # node scripts/setup-pro-project.mjs
+npm start                     # node scripts/start-mode.mjs
+npm run test:reader           # build + 只读入口的单元/集成测试
+npm run test:unit             # build + dist/tests/unit/**/*.test.js
+npm run test:integration:mock # build + dist/tests/integration/**/*.test.js
+npm run test:pro              # build + Pro 路径的 12 个测试文件
+npm run test:security         # build + dist/tests/unit/security.test.js
+npm run test:acceptance       # build + dist/tests/acceptance/real-project.test.js
+npm run test:restart          # build + 重启对账测试
+```
+
+## 文档索引
+
+- [README.md](README.md)：入口总览、状态与边界、命令
+- [项目读取指南](docs/project-reader.md)：客户端配置与网页连接步骤
+- [一句话使用指南](docs/pro-one-prompt.md)：Pro “@插件 + 项目路径 + 任务”接入
+- [连续编辑指南](docs/pro-continuous-editor.md)：连续编辑链路
+- [Pro 模式说明](docs/pro-mode.md)：Pro 入口的能力面
+- [Pro 交付计划](docs/pro-delivery-plan.md)
+- [模式与直连工具 (2026-09-12)](docs/modes-and-direct-tools-2026-09-12.md)
+- [Plus 模式说明 (2026-09-23)](docs/plus-mode-2026-09-23.md)：接力链路的当前接线状态
+- [安全边界](docs/security-boundary.md)：allowlist 与确认机制
+- [真实网页证据](docs/real-web-evidence.md)：哪些是真实回执、哪些不是
+- [设计评审 (2026-09-08)](docs/design-review-2026-09-08.md)
+- [ADR-0001 能力基线](docs/ADR-0001-capability-baseline.md)
+- [ADR-0002 App Server Schema](docs/ADR-0002-app-server-schema.md)
+- [ADR-0003 Web 回执](docs/ADR-0003-web-receipt.md)
+- [ADR-0004 恢复与保留](docs/ADR-0004-recovery-and-retention.md)：历史恢复决策，其验收**不等于**所有生产恢复路径已实现或已验证
+- [config/projects.example.json](config/projects.example.json)：只读入口配置样例
+- [tests/real-web/README.md](tests/real-web/README.md)：真实网页证据目录说明
+
+## 相关
+
+- [LICENSE](LICENSE)：MIT
+- [package.json](package.json)：依赖与脚本
+
+## Optional
+
+- [ADR 目录](docs/)：架构决策记录与阶段性说明
+- [scripts/](scripts/)：诊断与运维脚本（`pro-doctor.mjs`、`verify-real-web.mjs`、`verify-restart.mjs`、`manage-pro-tunnel.ps1` 等）
