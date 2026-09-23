@@ -1,0 +1,23 @@
+{
+  "stateDir": ".ai-handoff",
+  "indexCacheFile": "index-cache.json",
+  "maxEvidenceBytes": 16384,
+  "leaseTtlMs": 300000,
+  "freshnessWindowMs": 300000,
+  "flags": {
+    "CONTINUITY_ORCHESTRATOR_ENABLED": false,
+    "CONTINUITY_QUOTA_GUARD_ENABLED": false,
+    "CONTINUITY_AUTO_DRAIN_ENABLED": false,
+    "CONTINUITY_WEB_HANDOFF_ENABLED": false,
+    "CONTINUITY_WEB_UNATTENDED_ENABLED": false,
+    "CONTINUITY_WEB_AUTOWAKE_ENABLED": false,
+    "CONTINUITY_WATCHDOG_ENABLED": false,
+    "CONTINUITY_CLAUDE_ENABLED": false,
+    "CONTINUITY_DSH_ENABLED": false,
+    "CONTINUITY_ENGINEERING_BRIDGE_ENABLED": false,
+    "CONTINUITY_PATCH_APPLY_ENABLED": false,
+    "CONTINUITY_RETURN_TO_CODEX_ENABLED": false,
+    "CONTINUITY_CODEX_CHATGPT_WEB_FALLBACK": false,
+    "CONTINUITY_DRY_RUN": true
+  }
+}

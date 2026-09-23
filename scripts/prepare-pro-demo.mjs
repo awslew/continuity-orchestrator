@@ -1,0 +1,30 @@
+// Creates only a NEW disposable demonstration repository; never imports or cleans a user repo.
+import { mkdir, readFile, writeFile, access } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+const execute = promisify(execFile);
+const root = fileURLToPath(new URL("../../pro-demo", import.meta.url));
+const configPath = fileURLToPath(new URL("../config/pro.local.json", import.meta.url));
+const workspacePath = fileURLToPath(new URL("../config/pro-workspaces.local.json", import.meta.url));
+const entry = fileURLToPath(new URL("../../_research/upstream-1.4.4/engineering-bridge-1.4.4/dist/src/mcp-stdio.js", import.meta.url));
+await access(entry);
+const config = JSON.parse(await readFile(configPath, "utf8"));
+if (config.bridge || config.reader.projects.some(p => p.id === "pro-demo")) throw new Error("Pro configuration already has Bridge/demo settings; review it manually");
+await mkdir(root); // EEXIST deliberately stops; never overwrite an existing directory.
+const git = args => execute("git", ["-C", root, ...args], { windowsHide: true });
+await writeFile(join(root, "package.json"), JSON.stringify({ name: "continuity-pro-demo", private: true, type: "module", scripts: { test: "node --test math.test.js" } }, null, 2) + "\n");
+await writeFile(join(root, "math.js"), "export function add(a, b) { return a - b; }\n");
+await writeFile(join(root, "math.test.js"), "import test from 'node:test';\nimport assert from 'node:assert/strict';\nimport { add } from './math.js';\ntest('add sums two numbers', () => { assert.equal(add(2, 3), 5); assert.equal(add(-2, 3), 1); });\n");
+await writeFile(join(root, "README.md"), "# Pro direct execution demo\n\nFix add() in math.js without changing the tests. Submit a complete diff, validate it, apply only after PASS, then reread the file. No worker or model API is needed.\n");
+await git(["init"]);
+await git(["config", "core.autocrlf", "false"]);
+await git(["add", "README.md", "package.json", "math.js", "math.test.js"]);
+await git(["-c", "user.name=Continuity Demo", "-c", "user.email=demo@example.invalid", "commit", "-m", "Create isolated Pro demo fixture"]);
+await writeFile(workspacePath, JSON.stringify([{ id: "pro-demo", root, allow_write: true }], null, 2) + "\n", { flag: "wx" });
+await writeFile(`${workspacePath}.validation-profiles.json`, JSON.stringify({ version: 1, profiles: [{ workspace_id: "pro-demo", preparation: [], validation: [{ name: "math tests", argv: [process.execPath, "--test", "math.test.js"] }], default_step_timeout_seconds: 30, total_timeout_seconds: 60 }] }, null, 2) + "\n", { flag: "wx" });
+config.reader.projects.push({ id: "pro-demo", name: "Pro execution demo", root, share: ["."] });
+config.bridge = { entry, workspaces_config: workspacePath, workspace_ids: ["pro-demo"], allow_workers: false };
+await writeFile(configPath, JSON.stringify(config, null, 2) + "\n");
+process.stdout.write("Created isolated pro-demo and enabled direct patch validation/application only for it. Workers remain disabled.\n");

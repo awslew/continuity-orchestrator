@@ -1,0 +1,19 @@
+{
+  "sampleId": "fixture-stale",
+  "sampledAt": "2026-08-31T00:00:00.000Z",
+  "updatedAt": "2026-08-31T00:00:00.000Z",
+  "source": "fixture",
+  "conflict": false,
+  "primary": {
+    "kind": "primary",
+    "windowId": "five-hour",
+    "remainingBps": 100,
+    "usedBps": 9900,
+    "resetsAt": "2026-08-31T05:00:00.000Z",
+    "updatedAt": "2026-08-31T00:00:00.000Z",
+    "derivedRemaining": false,
+    "derivedUsed": false
+  },
+  "secondary": null,
+  "rawHash": "fixture"
+}

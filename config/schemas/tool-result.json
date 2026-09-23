@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuity.tool-result.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "ok", "revision", "state"],
+  "properties": {
+    "schema_version": { "const": "continuity.result.v1" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "idempotency_key": { "type": "string", "minLength": 1 },
+    "ok": { "type": "boolean" },
+    "task_id": { "type": ["string", "null"] },
+    "project_id": { "type": ["string", "null"] },
+    "state": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "data": {},
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "next_action": { "type": ["string", "null"] },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "error": { "type": ["object", "null"] }
+  }
+}

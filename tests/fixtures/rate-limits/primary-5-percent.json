@@ -1,0 +1,20 @@
+{
+  "sampleId": "fixture-primary-5",
+  "sampledAt": "2026-09-01T00:00:00.000Z",
+  "updatedAt": "2026-09-01T00:00:00.000Z",
+  "source": "fixture",
+  "conflict": false,
+  "primary": {
+    "kind": "primary",
+    "windowId": "five-hour",
+    "remainingBps": 500,
+    "usedBps": 9500,
+    "resetsAt": "2026-09-01T05:00:00.000Z",
+    "updatedAt": "2026-09-01T00:00:00.000Z",
+    "derivedRemaining": false,
+    "derivedUsed": false
+  },
+  "secondary": null,
+  "rawHash": "fixture",
+  "notes": "boundary: primary remaining <= 5 percent"
+}

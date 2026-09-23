@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "development": { "default_project": "my-project", "auto_apply": true },
+  "reader": {
+    "version": 1,
+    "projects": [{ "id": "my-project", "name": "My Project", "root": "D:/projects/my-project", "share": ["src", "tests", "README.md", "package.json", "package-lock.json"] }]
+  },
+  "editor": {
+    "state_dir": "D:/bridge-state/my-project-editor",
+    "workspaces": [{
+      "project_id": "my-project",
+      "writable_paths": ["src", "tests", "README.md"],
+      "validation": [{ "name": "Node tests in source snapshot", "argv": ["node", "--test"], "timeout_seconds": 60 }]
+    }]
+  }
+}

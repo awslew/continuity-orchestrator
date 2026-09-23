@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "reader": {
+    "version": 1,
+    "projects": [{ "id": "my-project", "name": "My Project", "root": "D:/projects/my-project", "share": ["src", "README.md", "package.json"] }]
+  }
+}

@@ -1,0 +1,32 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+
+test("real stdio MCP child discovers only read tools and reads real project content", { timeout: 15_000 }, async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "continuity-reader-stdio-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(join(root, "README.md"), "actual local content 你好\n");
+  const config = join(root, "projects.json");
+  await writeFile(config, JSON.stringify({ version: 1, projects: [{ id: "demo", name: "Demo", root, share: ["README.md"] }] }));
+  const transport = new StdioClientTransport({ command: process.execPath, args: [resolve("dist/src/project-reader/mcp.js")], env: { CONTINUITY_PROJECTS_CONFIG: config }, stderr: "pipe" });
+  let stderr = "";
+  transport.stderr?.on("data", (data) => { stderr += String(data); });
+  const client = new Client({ name: "reader-test", version: "1" });
+  t.after(() => client.close());
+  await client.connect(transport);
+  const list = await client.listTools();
+  assert.equal(list.tools.length, 4);
+  assert.ok(list.tools.every((tool) => tool.annotations?.readOnlyHint === true && tool.annotations?.destructiveHint === false));
+  const reply = await client.callTool({ name: "continuity_project_read", arguments: { project_id: "demo", path: "README.md" } });
+  assert.equal(reply.isError, false);
+  const body = reply.structuredContent as { ok: boolean; data: { lines: string[] } };
+  assert.equal(body.data.lines[0], "actual local content 你好");
+  const content = reply.content as { type: string; text: string }[];
+  assert.deepEqual(JSON.parse(content[0]!.text), body);
+  assert.equal((await client.callTool({ name: "continuity_patch_apply", arguments: {} })).isError, true);
+  assert.equal(stderr, "");
+});

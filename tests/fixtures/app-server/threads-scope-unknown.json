@@ -1,0 +1,8 @@
+{
+  "method": "thread/list",
+  "result": {
+    "threads": [
+      { "threadId": "thread-a", "turnId": "turn-a", "projectId": "project-a", "status": "active" }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "methods": [
+    "account/rateLimits/read",
+    "account/rateLimits/updated",
+    "thread/list",
+    "turn/interrupt",
+    "thread/resume"
+  ],
+  "realEvidence": "UNVERIFIED"
+}

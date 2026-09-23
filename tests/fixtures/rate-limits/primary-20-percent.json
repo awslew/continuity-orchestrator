@@ -1,0 +1,28 @@
+{
+  "sampleId": "fixture-primary-20",
+  "sampledAt": "2026-09-01T01:00:00.000Z",
+  "updatedAt": "2026-09-01T01:00:00.000Z",
+  "source": "fixture",
+  "conflict": false,
+  "primary": {
+    "kind": "primary",
+    "windowId": "five-hour",
+    "remainingBps": 2000,
+    "usedBps": 8000,
+    "resetsAt": "2026-09-01T05:00:00.000Z",
+    "updatedAt": "2026-09-01T01:00:00.000Z",
+    "derivedRemaining": false,
+    "derivedUsed": false
+  },
+  "secondary": {
+    "kind": "secondary",
+    "windowId": "weekly",
+    "remainingBps": 6000,
+    "usedBps": 4000,
+    "resetsAt": "2026-09-07T00:00:00.000Z",
+    "updatedAt": "2026-09-01T01:00:00.000Z",
+    "derivedRemaining": false,
+    "derivedUsed": false
+  },
+  "rawHash": "fixture"
+}

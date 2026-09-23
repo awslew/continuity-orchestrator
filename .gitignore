@@ -1,0 +1,30 @@
+# --- Build / dependencies ---
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# --- Runtime state and local evidence (may contain machine paths, session links,
+#     receipts or other operator-private data). Never publish these. ---
+.ai-handoff/
+evidence/
+index-cache.json
+logs/
+state/
+*.log
+
+# --- Local configuration. Only *.example.json is publishable. ---
+*.local.json
+*.local.json.*
+config/*.local.json
+config/*.local.json.*
+.env
+.env.*
+
+# --- Local editor/backup leftovers ---
+*.before-editor
+*.orig
+*.rej
+
+# --- Local scratch workspace (temporary scripts and captured test output). ---
+_scratch/

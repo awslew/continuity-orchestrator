@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "my-project",
+      "name": "My local project",
+      "root": "D:/projects/my-project",
+      "share": ["src", "docs", "README.md", "package.json"]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "receiptId": "interrupt-receipt-a",
+  "threadId": "thread-a",
+  "turnId": "turn-a",
+  "status": "confirmed"
+}

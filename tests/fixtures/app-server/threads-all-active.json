@@ -1,0 +1,10 @@
+{
+  "method": "thread/list",
+  "result": {
+    "visibility": "complete",
+    "threads": [
+      { "threadId": "thread-a", "turnId": "turn-a", "projectId": "project-a", "status": "active" },
+      { "threadId": "thread-b", "turnId": "turn-b", "projectId": "project-b", "status": "active" }
+    ]
+  }
+}

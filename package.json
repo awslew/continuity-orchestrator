@@ -1,0 +1,36 @@
+{
+  "name": "continuity-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node scripts/start-mode.mjs",
+    "pro:stdio": "node dist/src/project-reader/pro.js",
+    "test:pro": "npm run build && node --test dist/tests/unit/pro-session.test.js dist/tests/unit/pro-state.test.js dist/tests/unit/encoding.test.js dist/tests/unit/bounded.test.js dist/tests/integration/pro-stdio.test.js dist/tests/integration/pro-crash-recovery.test.js dist/tests/integration/pro-supervisor.test.js dist/tests/integration/editor.test.js dist/tests/integration/snapshot.test.js dist/tests/integration/development.test.js dist/tests/integration/local-projects.test.js dist/tests/integration/round-economy.test.js",
+    "pro:setup": "node scripts/setup-pro-project.mjs",
+    "reader:stdio": "node dist/src/project-reader/mcp.js",
+    "reader:check": "node scripts/check-project-reader.mjs",
+    "test:reader": "npm run build && node --test dist/tests/unit/project-reader.test.js dist/tests/integration/project-reader-stdio.test.js",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test:unit": "npm run build && node --test \"dist/tests/unit/**/*.test.js\"",
+    "test:integration:mock": "npm run build && node --test \"dist/tests/integration/**/*.test.js\"",
+    "test:security": "npm run build && node --test \"dist/tests/unit/security.test.js\"",
+    "test:acceptance": "npm run build && node --test dist/tests/acceptance/real-project.test.js",
+    "test:restart": "npm run build && node --test \"dist/tests/integration/restart-reconcile.test.js\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "iconv-lite": "^0.7.3",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.25.2"
+  }
+}

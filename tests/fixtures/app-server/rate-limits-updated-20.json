@@ -1,0 +1,21 @@
+{
+  "method": "account/rateLimits/updated",
+  "params": {
+    "rateLimits": {
+      "primary": {
+        "windowId": "five-hour",
+        "usedPercent": 80,
+        "remainingPercent": 20,
+        "updatedAt": "2026-09-01T01:00:00.000Z",
+        "resetsAt": "2026-09-01T05:00:00.000Z"
+      },
+      "secondary": {
+        "windowId": "weekly",
+        "usedPercent": 40,
+        "remainingPercent": 60,
+        "updatedAt": "2026-09-01T01:00:00.000Z",
+        "resetsAt": "2026-09-07T00:00:00.000Z"
+      }
+    }
+  }
+}

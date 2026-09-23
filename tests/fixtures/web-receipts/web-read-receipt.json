@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "continuity.web-read-receipt.v1",
+  "chatId": "chat_mock_fixture-task-1",
+  "cursor": null,
+  "pageState": "loaded",
+  "quota": "none",
+  "observedMessageIds": ["msg_fixture_0001"],
+  "payloadRefs": [".ai-handoff/evidence/web-read-fixture.json"],
+  "blockedWaiting": false,
+  "createdAt": "2026-09-03T00:00:02.000Z",
+  "comment": "cursor null on purpose: the authoritative cursor is the local ledger eventSeq/stateRevision (ADR-0004 R-6); the web side never produces one."
+}

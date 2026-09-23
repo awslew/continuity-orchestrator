@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "continuity.web-message-receipt.v1",
+  "chatId": "chat_mock_fixture-task-2",
+  "clientOperationId": "wsend_fixture-key-2",
+  "idempotencyKey": "fixture-key-2",
+  "upstreamMessageId": "msg_fixture_0002",
+  "sendReceiptId": "send_fixture_0002",
+  "completeReceiptId": "complete_fixture_0002",
+  "pageState": "unknown",
+  "quota": "unknown",
+  "blockedWaiting": true,
+  "createdAt": "2026-09-03T00:00:01.000Z"
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "continuity.feature-flags.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "CONTINUITY_ORCHESTRATOR_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_QUOTA_GUARD_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_AUTO_DRAIN_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_WEB_HANDOFF_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_WEB_UNATTENDED_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_WEB_AUTOWAKE_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_WATCHDOG_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_CLAUDE_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_DSH_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_ENGINEERING_BRIDGE_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_PATCH_APPLY_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_RETURN_TO_CODEX_ENABLED": { "type": "boolean", "default": false },
+    "CONTINUITY_CODEX_CHATGPT_WEB_FALLBACK": { "type": "boolean", "default": false },
+    "CONTINUITY_DRY_RUN": { "type": "boolean", "default": true }
+  }
+}
