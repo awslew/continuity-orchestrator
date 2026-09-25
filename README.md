@@ -1,10 +1,20 @@
 # Continuity Orchestrator
 
-**Pro 支持“@插件 + 项目路径 + 任务”的直接操作链路。** 开启 `local_access` 后，Chat 可根据用户消息中的绝对路径直接读取项目、编写修改，本地自动建立 Git 快照、运行测试并在通过后写回；无需逐项目登记或手动 APPLY。支持非 Git 和有未提交修改的工程，不调用 Codex 或本地模型。接入步骤见 [一句话使用指南](docs/pro-one-prompt.md) 与 [连续编辑指南](docs/pro-continuous-editor.md)。本仓库内的回归证据一律为**本地合同证据（Local Contract Evidence）**，不等同于真实网页或真实账户的端到端验收。
+## 这个项目想解决什么
 
-让支持 MCP 的聊天客户端读取你明确共享的本地项目，获取真实源码、行号和搜索结果。基础只读入口不调用 Codex、Claude 或 DSH，不需要 API key 或浏览器驱动。也保留了实验性的 Codex 额度接力实现。
+### Pro：在 Chat 里直接读改本机项目
 
-Read explicitly shared local source files from an MCP client, without spending local model quota. The project reader is usable independently of the experimental quota relay.
+你想在 ChatGPT 里直接说“读取这个本机项目、修好问题并跑测试”，不想手工上传文件、复制代码或另开本地模型。**Pro 模式**让你在 Chat 端调用 `@chat-bridge-codex` 插件，在消息中指定项目绝对路径和任务；插件可按授权直接读取、搜索、修改本地源码，建立修改前快照、运行测试并在通过后写回，必要时可撤销。不需要先逐项目登记，也不依赖 Codex 额度接力。
+
+Pro 需要在本机显式开启 `local_access`、完成 ChatGPT 连接，并遵守 ChatGPT 的工具权限检查。具体用法见 [一句话使用指南](docs/pro-one-prompt.md) 与 [连续编辑指南](docs/pro-continuous-editor.md)。只想读取时，可使用独立的**只读入口**查看明确共享的目录、源码和真实行号。
+
+### Plus：Codex 额度用完后让网页版 ChatGPT 接着做（目标）
+
+你在 Codex 里做的任务还没完成，Codex 额度却快用完了；与此同时，网页版 ChatGPT 还有可用额度。**Plus 模式的目标**是把剩余任务交给网页版 ChatGPT 接着做，等 Codex 额度恢复后回到原线程，让两边的额度接力使用。
+
+**当前状态：**Plus 链路通过了本地合同测试，但真实网页版 ChatGPT、真实账户与生产传输的端到端接力**尚未验证**；生产接力默认关闭。仓库内的回归结果也不能代替 Pro 的真实网页和账户验收。
+
+**In English:** Pro lets ChatGPT use a plugin to read and edit a local project directly, with explicit local access and tests. The separate Plus goal is to hand unfinished Codex work to web ChatGPT when Codex quota runs low, then return to the original thread; real web handoff is not yet verified.
 
 ## 从项目读取开始
 
@@ -51,7 +61,7 @@ npm run test:integration:mock
 
 `test:reader` 和 `test:pro` 包含真实临时文件与 MCP 子进程测试。已有真实网页源码读取证据；网页执行的完成情况应查看日期明确的验收记录，不能由本地测试推断。
 
-本目录尚未建立独立 Git 仓库，`private: true` 保留以防误发 npm。开源前应选定本项目许可证，确认依赖与上游版权，并从干净的源码导出创建发布仓库；不要发布整个父工作区。个人 `evidence/`、本机项目配置、账本和浏览器资料均不属于发布产物。旁边的 engineering-bridge 是独立的第三方 MIT 项目。
+本仓库已公开并采用 MIT 许可证；`private: true` 保留以防误发 npm。个人 `evidence/`、本机项目配置、账本和浏览器资料均不属于发布产物。旁边的 engineering-bridge 是独立的第三方 MIT 项目。
 
 ## Experimental Plus lifecycle contract
 
